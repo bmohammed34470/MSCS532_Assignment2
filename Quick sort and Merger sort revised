@@ -1,0 +1,84 @@
+import time
+import random
+import tracemalloc  # For memory usage tracking
+
+def quick_sort(arr):
+    """Implements the Quick Sort algorithm using recursion and list comprehensions."""
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]  # Choose the middle element as pivot
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quick_sort(left) + middle + quick_sort(right)
+
+def merge_sort(arr):
+    """Implements the Merge Sort algorithm using recursion."""
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    """Merges two sorted subarrays into one sorted array."""
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+def run_algorithm(algorithm, data):
+    """Executes the sorting algorithm and records execution time and memory usage."""
+    data_copy = data[:]  # Create a copy to avoid modifying the original dataset
+    tracemalloc.start()  # Start memory tracking
+    start_time = time.time()
+    algorithm(data_copy)
+    end_time = time.time()
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    return end_time - start_time, peak / 1024  # Convert peak memory usage to KB
+
+# Generat datasets
+sorted_data = list(range(1000))
+reverse_sorted_data = sorted_data[::-1]
+random_data = random.sample(range(1000), 1000)
+
+# Run and compare performance
+results = {
+    "Dataset": ["Sorted", "Reverse Sorted", "Random"],
+    "Quick Sort Time (s)": [],
+    "Quick Sort Memory (KB)": [],
+    "Merge Sort Time (s)": [],
+    "Merge Sort Memory (KB)": []
+}
+
+datasets = [sorted_data, reverse_sorted_data, random_data]
+for dataset in datasets:
+    q_time, q_memory = run_algorithm(quick_sort, dataset)
+    m_time, m_memory = run_algorithm(merge_sort, dataset)
+    results["Quick Sort Time (s)"].append(q_time)
+    results["Quick Sort Memory (KB)"].append(q_memory)
+    results["Merge Sort Time (s)"].append(m_time)
+    results["Merge Sort Memory (KB)"].append(m_memory)
+
+# Display the performance comparison
+def display_results():
+    print("Performance Comparison of Quick Sort vs Merge Sort")
+    print("{:<15} {:<20} {:<20} {:<20} {:<20}".format("Dataset", "Quick Sort Time (s)", "Quick Sort Memory (KB)", "Merge Sort Time (s)", "Merge Sort Memory (KB)"))
+    for i in range(len(results["Dataset"])):
+        print("{:<15} {:<20.6f} {:<20.2f} {:<20.6f} {:<20.2f}".format(
+            results["Dataset"][i],
+            results["Quick Sort Time (s)"][i], results["Quick Sort Memory (KB)"][i],
+            results["Merge Sort Time (s)"][i], results["Merge Sort Memory (KB)"][i]
+        ))
+
+display_results()
